@@ -1,0 +1,14 @@
+useDynLib(MCMChybridGP)
+import(MASS)
+
+export(
+       .hybrid.template,
+       .runMCMCdemo,
+       .refresh.title,
+       .show.time,
+       GProcess,
+       generateX0,
+       hybrid.explore,
+       hybrid.sample
+       )
+
