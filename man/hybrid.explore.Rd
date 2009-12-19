@@ -109,8 +109,10 @@ A list is returned to be used as input to \code{\link{hybrid.sample}}.
 \item{X }{A matrix made up of the set of points to be
 used in the final Gaussian process fit.}
 \item{y }{A column of the corresponding values of \code{f}.}
-\item{sd_y }{A column of corresponding standard deviations with
-respect to \code{f}.}
+\item{Ey }{A column of the corresponding (zero-mean) Gaussian process fit.}
+\item{sd_y }{List of 2 columns of corrresponding standard deviations
+\code{sd} with respect to \code{f} (and standardised values \code{cor}).
+Useful for setting \code{cor.max} in \code{\link{hybrid.sample}}.}
 \item{f }{The original log-density function as supplied.}
 \item{fcalls }{The number of function calls used to evaluate \code{f}.}
 \item{acceptance }{A column of 0's (for proposals not accepted) and

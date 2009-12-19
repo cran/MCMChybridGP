@@ -28,8 +28,6 @@ to be considered in determining the best set.
 of points to be considered.
 }
 }
-\details{
-}
 \value{
 A matrix is returned which can then be supplied to \code{\link{hybrid.explore}}.
 }

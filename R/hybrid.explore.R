@@ -10,8 +10,7 @@ function (f, X0, n = 200, L = 1000, delta = 0.001, nchains = 5, T.mult = 1.5,
     d <- dim(X)[2]
     if(d < 2) stop("Points with dimension of at least 2 assumed for X")
     W <- function(p) return(sum(p^2)/2)
-    sd_f <- list(proposed = data.frame(sd = NA, cor = NA), accepted = data.frame(sd = NA, 
-        cor = NA))
+    sd_y <- data.frame(sd = NA, cor = NA)
     if (d < 2) 
         graph <- FALSE
     if (n0 > 1) 
@@ -37,7 +36,7 @@ function (f, X0, n = 200, L = 1000, delta = 0.001, nchains = 5, T.mult = 1.5,
         if ((length(lb) != d) || (length(lb) != d)) 
             stop("lb, ub incorrect dimension")
         if (is.na(sum(lb + ub))) 
-            stop("hybrid.sample: NaN lb, ub")
+            stop("hybrid.explore: NaN lb, ub")
         xOK <- TRUE
         for (i in 1:n0) {
             for (j in 1:d) if ((X[i, j] <= lb[j]) || (X[i, j] >= ub[j])) 
@@ -81,6 +80,7 @@ function (f, X0, n = 200, L = 1000, delta = 0.001, nchains = 5, T.mult = 1.5,
         stop("T.mult < 1 not allowed")
     swaps.record <- NULL
     y <- rep(NA, n0)
+    Ey <- rep(0, n0)
     Temp <- T.mult^(1:nchains - 1)
     cat("Parallel Tempering:", nchains, "chains with T:", Temp, 
         "\n")
@@ -237,7 +237,7 @@ function (f, X0, n = 200, L = 1000, delta = 0.001, nchains = 5, T.mult = 1.5,
                 xOK <- FALSE
               if (xOK) 
                 break
-              cat("hybrid.sample: Proposed x failed\n")
+              cat("hybrid.explore: Proposed x failed\n")
               count <- count + 1
               if (count == 10) {
                 for (remv in 1:nchains) {
@@ -287,8 +287,6 @@ function (f, X0, n = 200, L = 1000, delta = 0.001, nchains = 5, T.mult = 1.5,
                 cat(sep="", "Proposed x(", chain, ", T =", Temp[chain], "):\n")
                 cat("", rnd(x.P), "\n")
                 sigmaf_x.P <- sigmaf(x.P)
-                sd_f$proposed <- rbind(sd_f$proposed, c(sigmaf_x.P, 
-                  sigmaf_x.P/sqrt(dsq)))
                 if (out$Early < 0) {
                   cat("Early stop: cor(f(x)) =", sigmaf_x.P/sfactor, ">",
                     cor.max, "( with T =", Temp[chain], ")\n")
@@ -328,8 +326,7 @@ function (f, X0, n = 200, L = 1000, delta = 0.001, nchains = 5, T.mult = 1.5,
                 alpha <- min(((-H_xp.P + H_xp.C)/Temp[chain]), 
                   0)
                 if (log(runif(1)) < alpha) {
-                  sd_f$accepted <- rbind(sd_f$accepted, c(sigmaf_x.P, 
-                    sigmaf_x.P/sqrt(dsq)))
+                  sd_y <- rbind(sd_y, c(sigmaf_x.P, sigmaf_x.P/sqrt(dsq)))
                   x[chain, ] <- x.P
                   fx[chain] <- fx.P
                   if (fx.P + sigmaf_x.P/sfactor > target.bsf[path]) {
@@ -340,6 +337,7 @@ function (f, X0, n = 200, L = 1000, delta = 0.001, nchains = 5, T.mult = 1.5,
                   Xnext <- rbind(Xnext, x.P)
                   ynext <- c(ynext, fx.P)
                   acceptance <- c(acceptance, 1)
+                  Ey <- c(Ey, sigmaf_x.P)
                   cat(sep="", "ACCEPT x(", chain, ", T = ", Temp[chain], "):\n")
                   cat("", rnd(x.P), "\n")
                   if (graph) 
@@ -397,15 +395,14 @@ function (f, X0, n = 200, L = 1000, delta = 0.001, nchains = 5, T.mult = 1.5,
         }
         its <- 2
     }
-    sd_f$proposed <- sd_f$proposed[-1, ]
-    sd_f$accepted <- sd_f$accepted[-1, ]
+    sd_y <- sd_y[-1, ]
     GPfit <- GProcess(X, y, dsq_eta, request.functions = TRUE)
     details <- list(bsf = bsf, f.bsf = f.bsf, nchains = nchains, 
         T.mult = T.mult, nswaps = nswaps, L = L, delta = delta, 
         BOUNDS = BOUNDS, lb = lb, ub = ub, KEY.VARS = KEY.VARS, 
         graph.template = graph.template, delta.increase = delta.increase, 
         nrefresh.graph = nrefresh.graph, cor.max = cor.max, dsq_eta = dsq_eta)
-    return(list(X = X, y = y, sd_y = sd_f, f = f, fcalls = fcalls, 
+    return(list(X = X, y = y, Ey = Ey, sd_y = sd_y, f = f, fcalls = fcalls, 
         acceptance = acceptance, swap.acceptance = swaps.record, 
         details = details, GPfit=GPfit))
 }

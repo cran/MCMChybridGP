@@ -1,7 +1,7 @@
 hybrid.sample <-
 function (Explore = NULL, n = 1000, L = NULL, delta = NULL, nchains = NULL, 
-    T.mult = NULL, nswaps = NULL, replace.target = c(0, 1, 2), graph = FALSE,
-    graph.template = NULL, key.vars = NULL, delta.increase = NULL,
+    T.mult = NULL, cor.max=0.9, r=5, nswaps = NULL, replace.target = c(0, 1, 2),
+    graph = FALSE, graph.template = NULL, key.vars = NULL, delta.increase = NULL,
     nrefresh.graph=NULL) 
 {
     f <- Explore$f
@@ -168,8 +168,6 @@ function (Explore = NULL, n = 1000, L = NULL, delta = NULL, nchains = NULL,
     }
     acceptance <- NULL
     SAMP <- yReport <- NULL
-    if (replace.target[1] != 0) 
-        for (chain in 1:nchains) fx <- Ef(x[chain, ])
     its <- 1
     swaps.record <- swaps.record1 <- NULL
     repeat {
@@ -204,11 +202,12 @@ function (Explore = NULL, n = 1000, L = NULL, delta = NULL, nchains = NULL,
                   Efswap2 <- fx[swap[2]]
                 }
                 else {
-                  Efswap1 <- Ef(x[swap[1], ])
-                  Efswap2 <- Ef(x[swap[2], ])
+                  cor1 <- sigmaf(x[swap[1], ])/sqrt(dsq)
+                  cor2 <- sigmaf(x[swap[1], ])/sqrt(dsq)
+                  Efswap1 <- Ef(x[swap[1], ]) - r*(cor1-cor.max)^2/(1-cor1)^2
+                  Efswap2 <- Ef(x[swap[2], ]) - r*(cor2-cor.max)^2/(1-cor2)^2
                 }
-                alpha <- (Efswap2/T1 - Efswap1/T1 + Efswap1/T2 - 
-                  Efswap2/T2)
+                alpha <- (Efswap2/T1 - Efswap1/T1 + Efswap1/T2 - Efswap2/T2)
                 if (log(runif(1)) < alpha) {
                   Temp[swap[1]] <- T2
                   Temp[swap[2]] <- T1
@@ -233,16 +232,18 @@ function (Explore = NULL, n = 1000, L = NULL, delta = NULL, nchains = NULL,
                 fswap2 <- Efswap2 <- fx[swap[2]]
             }
             else if (replace.target[1] == 2) {
-                Efswap1 <- fswap1 <- Ef(x[swap[1], ])
-                Efswap2 <- fswap2 <- Ef(x[swap[2], ])
+                cor1 <- sigmaf(x[swap[1], ])/sqrt(dsq)
+                cor2 <- sigmaf(x[swap[1], ])/sqrt(dsq)
+                Efswap1 <- fswap1 <- Ef(x[swap[1], ]) - r*(cor1-cor.max)^2/(1-cor1)^2
+                Efswap2 <- fswap2 <- Ef(x[swap[2], ]) - r*(cor2-cor.max)^2/(1-cor2)^2
             }
             else if (replace.target[1] == 1) {
                 fswap1 <- fx1
                 xswap2 <- x[swap[2], ]
-                Efswap1 <- Ef(x[swap[1], ])
-                Efswap2 <- Ef(x[swap[2], ])
-                Efswap1 <- Efswap1
-                Efswap2 <- Efswap2
+                cor1 <- sigmaf(x[swap[1], ])/sqrt(dsq)
+                cor2 <- sigmaf(x[swap[1], ])/sqrt(dsq)
+                Efswap1 <- Ef(x[swap[1], ]) - r*(cor1-cor.max)^2/(1-cor1)^2
+                Efswap2 <- Ef(x[swap[2], ]) - r*(cor2-cor.max)^2/(1-cor2)^2
                 date1 <- date()
                 fswap2 <- f(x[swap[2], ])
                 date2 <- date()
@@ -285,7 +286,7 @@ function (Explore = NULL, n = 1000, L = NULL, delta = NULL, nchains = NULL,
             x.C <- x[chain, ]
             p.C <- NULL
             cat("\n")
-            cat(sep="", "Leapfrog from x(", chain, ", T =", Temp[chain], "):\n")
+            cat(sep="", "Leapfrog from x(", chain, ", T = ", Temp[chain], "):\n")
             cat("", rnd(x.C), "\n")
             if (replace.target[1] == 0) 
                 fx.C <- fx[chain]
@@ -315,10 +316,6 @@ function (Explore = NULL, n = 1000, L = NULL, delta = NULL, nchains = NULL,
             }
             out <- list(x = xp_Early[, 1], p = xp_Early[, 2])
             H_xp.C <- -fx.C + W(p.C)
-            if ((replace.target[1] == 2) || ((replace.target == 
-                1) && (path > 1))) {
-                H_xp.C <- H_xp.C
-            }
             x.P <- out$x
             p.P <- out$p
             OUTSIDE_BOUNDS <- FALSE
@@ -370,12 +367,12 @@ function (Explore = NULL, n = 1000, L = NULL, delta = NULL, nchains = NULL,
                     if (path == 1) 
                       .show.time(date1, date2, graph)
                 }
-                sigmaf_x.P <- sigmaf(x.P)
                 H_xp.P <- -fx.P + W(p.P)
-                if ((replace.target[1] == 2) || ((replace.target == 
-                  1) && (path > 1))) {
-                  cor_x.P <- sigmaf_x.P/sqrt(dsq)
-                  H_xp.P <- H_xp.P
+                if ((replace.target[1] == 2) || ((replace.target == 1) && (path > 1))) {
+                  cor_x.C <- sigmaf(x.C)/sqrt(dsq)
+                  cor_x.P <- sigmaf(x.P)/sqrt(dsq)
+                  H_xp.C <- H_xp.C + r*(cor_x.C-cor.max)^2/(1-cor_x.C)^2
+                  H_xp.P <- H_xp.P + r*(cor_x.P-cor.max)^2/(1-cor_x.P)^2
                 }
                 alpha <- min(((-H_xp.P + H_xp.C)/Temp[chain]), 
                   0)

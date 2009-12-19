@@ -4,7 +4,7 @@
 \alias{MCMChybridGP}
 \docType{package}
 \title{
-Hybrid MCMC for a multimodal density with derivatives unknown using Gaussian processes
+Hybrid MCMC for a multimodal density with derivatives replaced by Gaussian process
 }
 \description{
 Hybrid Markov chain Monte Carlo (MCMC) to simulate from

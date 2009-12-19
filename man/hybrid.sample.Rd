@@ -1,6 +1,7 @@
 \name{hybrid.sample}
 \Rdversion{1.1}
 \alias{hybrid.sample}
+\alias{.hybrid.template}
 \title{
 Sampling phase applying results from Exploratory phase.
 }
@@ -17,9 +18,9 @@ or all of the chains.
 }
 \usage{
 hybrid.sample(Explore = NULL, n = 1000, L = NULL, delta = NULL,
-nchains = NULL, T.mult = NULL, nswaps = NULL, replace.target = c(0, 1, 2),
-graph = FALSE, graph.template = NULL, key.vars = NULL,
-delta.increase = NULL, nrefresh.graph = NULL)
+nchains = NULL, T.mult = NULL, cor.max=0.9, r=5, nswaps = NULL,
+replace.target = c(0, 1, 2), graph = FALSE, graph.template = NULL,
+key.vars = NULL, delta.increase = NULL, nrefresh.graph = NULL)
 }
 \arguments{
   \item{Explore}{
@@ -44,18 +45,27 @@ An optional integer argument.  The number of MCMC parallel chains to be used.
 An optional integer argument.  The number of Parallel Tempering chains to be used.
 (Defaults to the same value used in \code{\link{hybrid.explore}}.)
 }
+  \item{cor.max}{
+An optional numerical argument between 0 and 1 (default 0.9).  Gives
+the maximum amount a point can vary from points in Gaussian process fit.
+Gauge this by \code{sd_y} output from \code{\link{hybrid.explore}}.
+}
+  \item{r}{
+An optional numerical argument (default 5).
+A penalty factor on points varying from points in Gaussian process fit,
+when replacing the target distribution.
+}
   \item{nswaps}{
-An optional integer argument.  The number of repititions to be used in swap proposals
-(Defaults to the same value as in \code{\link{hybrid.explore}}.)
+An optional integer argument.  The number of repititions in swaps proposed
+between MCMC chains (defaulting to value in \code{\link{hybrid.explore}}).
 }
   \item{replace.target}{
 The sampling scheme to be used (0, 1 or 2) in acceptance of
-MCMC proposals.  0 represents using the true target
-distribution. 1 represents using the true target
-distribution only in the primary chain (temperature 1), and the
-Gaussian process approximation in all other chains.
-2 represents completetely replacing the target distribution by the
-Gaussian process approximation in all chains.
+MCMC proposals.  Where 0 represents using the true target
+distribution in all chains. 1 (default) represents using the true target
+distribution only in the primary chain (with temperature 1).
+2 represents replacing the target distribution in all chains by the
+Gaussian process approximation.
 }
   \item{graph}{
 An optional boolean argument (default is FALSE).
@@ -65,6 +75,7 @@ To request a graphical progress display during the Sampling phase.
 An optional function argument.
 A template on which to draw points generated during the Sampling phase.
 By default a graph would be produced scaled appropriately for points sampled.
+Its form can be seen by \code{\link{.hybrid.template}}.
 }
   \item{key.vars}{
 An optional integer argument.
@@ -90,6 +101,7 @@ A list is returned consisting of the following.
 the target distribution.}
 \item{y }{A column of the corrresponding values of the log-density
 of the target distribution.}
+\item{Ey }{Corresponding values of the (zero-mean) Gaussian process fit.}
 \item{fcalls }{The number of function calls to evaluate the true log-density.}
 \item{acceptance }{A column of 0's (for proposals not accepted) and
 1's (for proposals accepted) for outcomes of Leapfrog proposals.}

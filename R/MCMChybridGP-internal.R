@@ -247,10 +247,10 @@ function (date1, date2, graph)
             for (i in 1:15) str <- paste(sep = "", str, ch)
             title(c("", "", "", str), adj = 1, cex.main = 0.7, 
                 col.main = "white")
+            if (TIME > 0) 
+                title(c("", "", "", paste("Call:", TIME, "seconds")), 
+                    adj = 1, cex.main = 0.7)
         }
-        if (TIME > 0) 
-            title(c("", "", "", paste("Call:", TIME, "seconds")), 
-                adj = 1, cex.main = 0.7)
     }
 }
 
