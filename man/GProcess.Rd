@@ -14,41 +14,44 @@ components of the Gaussian process fit as used by
 \code{\link{hybrid.explore}} and \code{\link{hybrid.sample}}.
 }
 \usage{
-GProcess(X, y, dsq_eta = NULL, request.functions = TRUE)
+GProcess(X, y, params = NULL, request.functions = TRUE, finetune = FALSE)
 }
 \arguments{
   \item{X}{
 A matrix of at least 2 columns with rows representing the
-points (nodes) for the Gaussian process.
+points (nodes) for a Gaussian process fit.
 }
   \item{y}{
 A column of corresponding values of the log-density.
 Each entry corresponds to the log-density evaluated
 at the respective row in \code{X}.
 }
-  \item{dsq_eta}{
+  \item{params}{
 Gaussian process parameters as used in \code{\link{hybrid.explore}}.
-(Optimal values will be determined when not supplied.)
+(Optimal values are determined (starting from a supplied value).)
 }
   \item{request.functions}{
-Boolean argument (with default TRUE) to request the return of function
+Optional boolean argument (default TRUE) to request the return of function
 approximations \code{Ef} (and \code{sigmaf}) of the log-density.
+}
+  \item{finetune}{
+Optional boolean argument (default FALSE) to determine
+fine-tuned optimal values in \code{params}.
 }
 }
 \value{
 Returned is a list as requested consisting of:
-\item{Ef }{Upon request, the Gaussian process (zero mean) approximation
-of the log-density function.}
+\item{Ef }{The Gaussian process approximation of the log-density function.}
 \item{sigmaf }{Upon request, a function giving the Gaussian process
-approximation of the standard deviation with respect to the
-log-density for a given point.}
-\item{Sigma }{Covariance matrix used in generating the Gaussian process fit.}
+approximation of the standard deviation with respect to \code{y=f(x)}
+for a given point.}
+\item{Sigma }{Covariance matrix used in the Gaussian process fit.}
 \item{Sigma.inv }{The inverse of the Covariance matrix.}
 \item{inverseOK }{Boolean flag to indicate successful calculation
 of \code{Sigma.inv}.}
 \item{X }{The original \code{X} matrix as supplied.}
-\item{ystar }{The zero mean form of \code{y} as supplied.}
-\item{dsq_eta }{Parameter values determined for the Gaussian process.}
+\item{y }{\code{y} as supplied. (Note calculations use \code{y-mean(y)})}
+\item{params }{Parameter values for the Gaussian process fit.}
 }
 \references{
 "Efficient MCMC schemes for Bayesian calibration of computer models",
@@ -78,7 +81,8 @@ Mark James Fielding <stafmj@nus.edu.sg>
     Ef <- GProcess(X, y, request.functions = TRUE)$Ef
     Ey <- NA*y
     for(i in 1:9) Ey[i] <- Ef(X[i,])
-    data.frame(X, ystar=y-mean(y), Ey)
+    data.frame(X, y, Ey)
     ## Gaussian process close to exact at points supplied.
 
 }
+

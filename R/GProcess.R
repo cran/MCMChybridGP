@@ -1,40 +1,42 @@
 GProcess <-
-function (X, y, dsq_eta = NULL, request.functions = TRUE) 
+function (X, y, params = NULL, request.functions = TRUE, finetune=FALSE)
 {
     X <- as.matrix(X)
     n <- dim(X)[1]
     d <- dim(X)[2]
     if(d < 2) stop("Points with dimension of at least 2 assumed for X")
-    ystar <- y - mean(y)
-    if (is.null(dsq_eta)) 
-        dsq_eta <- rep(1, 1 + d)
+    mY <- mean(y)
+    ystar <- y - mY
+    if (is.null(params)) {
+        params <- rep(1, 1 + d)
+        finetune <- TRUE
+    } else factr <- 1e10
+    if(finetune) factr <- 1e15
     Lreject <- -1e6
-    if (exists(".MCMChybridGP.Lreject")) Lreject <- .MCMChybridGP.Lreject
-    .MCMChybridGP.Lreject <- Lreject
-    assign(".MCMChybridGP.Lreject", Lreject, envir=.GlobalEnv)
+    if (exists(".Rpackage.Lreject")) Lreject <- .Rpackage.Lreject
+    .Rpackage.Lreject <- Lreject
+    assign(".Rpackage.Lreject", Lreject, envir=.GlobalEnv)
     Lok <- TRUE
-    L <- function(dsq_eta) {
-        dsq <- dsq_eta[1]
-        eta <- dsq_eta[-1]
+    L <- function(params) {
+        lsq <- params[1]
+        eta <- params[-1]
         c.scalar <- function(xi, xj) {
             h <- abs(xi - xj)
-            return(dsq * prod((1 + eta * h) * exp(-eta * h)))
+            return(lsq * prod((1 + eta * h) * exp(-eta * h)))
         }
         c.vec <- function(x) {
             vec <- rep(NA, n)
             for (j in 1:n) vec[j] <- c.scalar(x, X[j, ])
             return(vec)
         }
-        Sigma <- .Call("calcSigma", X, dsq_eta, PACKAGE = "MCMChybridGP")
+        Sigma <- .Call("calcSigma", X, params)
         cholOK <- FALSE
         try({
             R <- chol(Sigma)
             cholOK <- TRUE
-        })
+        }, silent=TRUE)
         if (!cholOK) {
-            val <- .MCMChybridGP.Lreject * runif(1, 1, 10)
-            cat("GProcess: L(dsq, eta): chol(Sigma) failed. Returning", 
-                val, "\n")
+            val <- .Rpackage.Lreject * runif(1, 1, 10)
             Lok <- FALSE
             return(val)
         }
@@ -43,29 +45,29 @@ function (X, y, dsq_eta = NULL, request.functions = TRUE)
         val <- -1/2 * ldet.Sigma - 1/2 * t(ystar) %*% Sigma.inv %*% 
             ystar
         if (is.na(val)) {
-            val <- .MCMChybridGP.Lreject * runif(1, 1, 10)
+            val <- .Rpackage.Lreject * runif(1, 1, 10)
             Lok <- FALSE
-            cat("L(dsq, eta) NaN set to", val, "\n")
+            cat("L(lsq, eta) NaN set to", val, "\n")
             return(val)
         }
         val <- as.double(val)
-        if (val < .MCMChybridGP.Lreject) 
-            assign(".MCMChybridGP.Lreject", val, envir = .GlobalEnv)
+        if (val < .Rpackage.Lreject) 
+            assign(".Rpackage.Lreject", val, envir = .GlobalEnv)
         return(val)
     }
-    cat("GProcess: Maximum likelihood for delta.sq and eta..\n")
-    cat("initial L(", dsq_eta, ") =", L(dsq_eta), "\n")
+    cat("GProcess: Maximum likelihood for Gaussian process (finetune =", finetune, "\b)\n")
+    cat("initial L(", params, ") =", L(params), "\n")
     try({
-        solveL <- optim(dsq_eta, L, control = list(factr = 1e+15, 
-            fnscale = -1), method = "L-BFGS-B", lower = 1e-06)
+        solveL <- optim(params, L, control = list( fnscale = -1, factr=factr ),
+          method = "L-BFGS-B", lower = 1e-06)
         if (Lok) 
-            dsq_eta <- solveL$par
-        cat("optim => L(", round(1e+05 * dsq_eta)/1e+05, ") =", 
+            params <- solveL$par
+        cat("optim => L(", round(1e+05 * params)/1e+05, ") =", 
             as.double(solveL$value), "\n")
     })
-    dsq <- dsq_eta[1]
-    eta <- dsq_eta[-1]
-    Sigma <- .Call("calcSigma", X, dsq_eta, PACKAGE = "MCMChybridGP")
+    lsq <- params[1]
+    eta <- params[-1]
+    Sigma <- .Call("calcSigma", X, params)
     inverseOK <- FALSE
     try({
         Sigma.inv <- ginv(Sigma)
@@ -73,10 +75,10 @@ function (X, y, dsq_eta = NULL, request.functions = TRUE)
     })
     if (!request.functions) 
         return(list(Sigma = Sigma, Sigma.inv = Sigma.inv, inverseOK = inverseOK, 
-            X = X, ystar = ystar, dsq_eta = dsq_eta))
+            X = X, y = y, params = params))
     c.scalar <- function(xi, xj) {
         h <- abs(xi - xj)
-        val <- dsq * prod((1 + eta * h) * exp(-eta * h))
+        val <- lsq * prod((1 + eta * h) * exp(-eta * h))
         return(val)
     }
     c.vec <- function(x) {
@@ -88,13 +90,13 @@ function (X, y, dsq_eta = NULL, request.functions = TRUE)
         Ef <- function(x) NA
     else Ef <- function(x) {
         Ey_x <- as.double(t(c.vec(x)) %*% Sigma.inv %*% ystar)
-        return(Ey_x)
+        return(mY + Ey_x)
     }
     if (!inverseOK) 
         sigmaf <- function(x) NA
     else sigmaf <- function(x) {
         c.vec_x <- c.vec(x)
-        val <- dsq - as.double(t(c.vec_x) %*% Sigma.inv %*% c.vec_x)
+        val <- lsq - as.double(t(c.vec_x) %*% Sigma.inv %*% c.vec_x)
         if (is.na(val)) 
             return(Inf)
         if (val < 0) {
@@ -110,6 +112,6 @@ function (X, y, dsq_eta = NULL, request.functions = TRUE)
         return(sqrt(val))
     }
     return(list(Sigma = Sigma, Sigma.inv = Sigma.inv, inverseOK = inverseOK, 
-        X = X, ystar = ystar, dsq_eta = dsq_eta, Ef = Ef, sigmaf = sigmaf))
+        X = X, y = y, params = params, Ef = Ef, sigmaf = sigmaf))
 }
 

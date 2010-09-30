@@ -1,39 +1,37 @@
 .hybrid.template <-
 function (X, key.vars, lb, ub) 
 {
-    if (!is.null(X)) {
-        x1 <- X[, key.vars[1]]
-        x2 <- X[, key.vars[2]]
+    if(is.null(lb)) lb = rep(-Inf, length(x1))
+    if(is.null(ub)) ub = rep(Inf, length(x1))
+    x1 <- X[, key.vars[1]]
+    x2 <- X[, key.vars[2]]
+    low1 <- min(x1)
+    upp1 <- max(x1)
+    low2 <- min(x2)
+    upp2 <- max(x2)
+    extra1 <- extra2 <- 0.25
+    if(sum(abs(lb)) < Inf) {
+      low1 <- lb[key.vars[1]]
+      low2 <- lb[key.vars[2]]
+      extra1 <- 0.1
     }
-    else x1 <- x2 <- NULL
-    DRAW_BOUNDS <- FALSE
-    if (!is.null(lb)) {
-        l1 <- lb[key.vars[1]]
-        u1 <- ub[key.vars[1]]
-        l2 <- lb[key.vars[2]]
-        u2 <- ub[key.vars[2]]
-        DRAW_BOUNDS <- TRUE
+    if(sum(abs(ub)) < Inf) {
+      upp1 <- ub[key.vars[1]]
+      upp2 <- ub[key.vars[2]]
+      extra2 <- 0.1
     }
-    else {
-        low1 <- min(x1)
-        upp1 <- max(x1)
-        low2 <- min(x2)
-        upp2 <- max(x2)
-        l1 <- low1 - 0.5 * (upp1 - low1)
-        u1 <- upp1 + 0.5 * (upp1 - low1)
-        l2 <- low2 - 0.5 * (upp2 - low2)
-        u2 <- upp2 + 0.5 * (upp2 - low2)
-    }
+    l1 <- low1 - extra1 * (upp1 - low1)
+    l2 <- low2 - extra1 * (upp2 - low2)
+    u1 <- upp1 + extra2 * (upp1 - low1)
+    u2 <- upp2 + extra2 * (upp2 - low2)
     xlim <- c(l1, u1)
     ylim <- c(l2, u2)
     plot(x1, x2, xlim = xlim, type = "n", ylim = ylim, xlab = paste(sep = "", 
         "x", key.vars[1]), ylab = paste(sep = "", "x", key.vars[2]))
-    if (DRAW_BOUNDS) {
-        abline(v = l1, lty = 2)
-        abline(v = u1, lty = 2)
-        abline(h = l2, lty = 2)
-        abline(h = u2, lty = 2)
-    }
+    abline(v = lb[key.vars[1]], lty = 2)
+    abline(v = ub[key.vars[1]], lty = 2)
+    abline(h = lb[key.vars[2]], lty = 2)
+    abline(h = ub[key.vars[2]], lty = 2)
     legend(xlim[2], ylim[1], c("Accepted points", "Rejected points"), 
         pch = c(20, 4), pt.cex = c(1.2, 1), 
         cex = 0.7, col = c("black", "red"), xjust = 1, 
@@ -63,12 +61,33 @@ function ()
     mu1 <- c(-1, -1)
     mu2 <- c(+1, +1)
     sigma.sq <- 0.16
-    X <- matrix(c(-2, -2, -1, -1, 0, -2, -2, 0, 0, 0, 2, 0, 0, 
-        2, 1, 1, 2, 2), byrow = TRUE, ncol = 2)
+    X <- matrix(c( -1, -1,
+                   -1, -2,
+                 -1.7, -1.7,
+                   -2, -1,
+                 -1.7, -0.3,
+                   -1,  0,
+                 -0.3, -0.3,
+                    0, -1,
+                 -0.3, -1.7,
+                    1,  1,
+                    1,  0,
+                  0.3,  0.3,
+                    0,  1,
+                  0.3,  1.7,
+                    1,  2,
+                  1.2,  1.7,
+                  1.4,  1,
+                  1.2,  0.3,
+                  NULL), byrow = TRUE, ncol = 2)
+    lb <- NULL # c(-4, -4)
+    ub <- c(1.5, 4)
     cat("\n")
     cat("mu1 <- c(-1, -1)\n")
     cat("mu2 <- c(+1, +1)\n")
     cat("sigma.sq <-", sigma.sq, "\n")
+    cat("lb:", lb, "\n")
+    cat("ub:", ub, "\n")
     f <- function(x) {
         px <- 1/4/pi/sqrt(sigma.sq) * exp(-1/2/sigma.sq * sum((x - 
             mu1)^2)) + 1/4/pi/sqrt(sigma.sq) * exp(-1/2/sigma.sq * 
@@ -82,8 +101,13 @@ function ()
     cat("  return(log(px))\n")
     cat("}\n")
     cat("\n")
-    cat("t(X): -2   -1    0   -2    0    2    0    1    2 \n")
-    cat("      -2   -1   -2    0    0    0    2    1    2 \n")
+    cat(sep="\t", "X0:", X[1,], "\n")
+    cat(sep="\t", "   ", X[2,], "\n")
+    cat(sep="\t", "   ", X[3,], "\n")
+    cat(sep="\t", "   ", X[4,], "\n")
+    cat(sep="\t", "   ", X[5,], "\n")
+    cat("    ...\n")
+    cat("\n")
     plot.density <- function(X, phase) {
         oma <- par(mfrow = c(2, 1), oma = c(0, 0, 3, 0))
         for (param in 1:2) {
@@ -100,8 +124,9 @@ function ()
             px <- px/sum(px * 0.05)
             densty <- density(X[, param])
             plot(x, px, type = "l", main = paste(sep = "", 
-                "Density x", param), lwd = 0.5, col="blue",
-                ylim = c(0, max(c(densty$y, px))))
+              "Density x", param), lwd = 0.5, col="blue",
+              ylim = c(0, max(c(densty$y, px))))
+            if(param == 1) abline(v=1.5, lty=2)
             lines(densty, lty = 2, col = "red")
         }
         title(phase, outer = TRUE)
@@ -113,9 +138,9 @@ function ()
     fx.Contour <- matrix(rep(NA, 25^2), ncol = 25)
     n <- 100
     nchains <- 5
-    T.mult <- 1.5
+    T.mult <- 2
     L <- 100
-    delta = 0.005
+    delta = 0.05
     cat("\n")
     cat(sep="", "> explore.out <- hybrid.explore(f, X0, n, L, delta, nchains, T.mult, ...)\n")
     input <- readline(prompt = paste(sep = "", "Enter number of points for Gaussian process, n [", n, "]: "))
@@ -150,38 +175,14 @@ function ()
     cat(sep="", "> explore.out <- hybrid.explore(f, X0, n, L=", L,
       ", delta=", delta, ",\n")
     cat(sep="", "+                  nchains=", nchains, ", T.mult=",
-      T.mult, ")\n")
-    template.explore <- function(key.vars, ...) {
-        if (nchains > 1) {
-            cmd <- paste(sep = "", " hybrid.explore(f, X, n=", 
-                n, ", nchains=", nchains, ", T.mult=", T.mult, ")")
-        }
-        else cmd <- paste(sep = "", " hybrid.explore(f, X, n=", 
-            n, ", nchains=", nchains, ")")
-        for (i in 1:25) for (j in 1:25) {
-            xin <- rep(0, 2)
-            xin[key.vars] <- c(x.Contour[i], x.Contour[j])
-            fx.Contour[i, j] <- f(xin)
-        }
-        par(mfrow = c(1, 1), oma = c(0, 1, 0, 0))
-        par(mfrow = c(1, 1), oma = c(0, 1, 0, 0))
-        contour(x.Contour, x.Contour, exp(fx.Contour), xlab = paste(sep = "", 
-            "x", key.vars[1]), ylab = paste(sep = "", "x", key.vars[2]), 
-            cex.main = 1, xlim = c(-4, 4), ylim = c(-4, 4), levels = c(0.01, 
-                1e-04), labels = rep("", 2))
-        title(c("", "", "", "", "", "", cmd), cex.main = 0.7, 
-            adj = 0)
-        legend(4, -4, c("Included points", "Not included", "Early stops"), 
-            pch = c(20, 4, 1), pt.cex = c(1.2, 1, 1.2), cex = 0.7, 
-            col = c("black", "red", "blue"), xjust = 1, yjust = 0)
-    }
+      T.mult, ", lb=lb, ub=ub)\n")
+    assign(".Rpackage_DEMO", TRUE, envir=.GlobalEnv)
     explore.out <- hybrid.explore(f, X, L = L, delta = delta, 
-        n = n, nchains = nchains, cor.max = 0.7, T.mult = T.mult, 
-        graph = TRUE, graph.template = template.explore, key.vars = 1:2,
-        nswaps=5, spread=1.5, nrefresh.graph = 25)
+        n = n, nchains = nchains, T.mult = T.mult, 
+        lb=lb, ub=ub, graph = TRUE, nswaps=1)
     assign("explore.out", explore.out, envir = .GlobalEnv)
-    iterations <- 200
-    replace.target <- 0
+    iterations <- 500
+    replace.target <- 1
     cat("\n")
     cat("> sample.out <- hybrid.sample(explore.out, iterations, replace.target)\n")
     input <- readline(prompt = paste(sep = "", "Enter number of sampling iterations [", 
@@ -197,34 +198,13 @@ function ()
         if (input %in% 0:2) 
             replace.target <- num
     }
-    template.sample <- function(key.vars, ...) {
-        cmd1 <- paste(sep = "", " hybrid.sample(explore.out, iterations=", 
-            iterations, ",")
-        cmd2 <- paste("                                  replace.target=",
-            deparse(replace.target), ")")
-        for (i in 1:25) for (j in 1:25) {
-            xin <- rep(0, 2)
-            xin[key.vars] <- c(x.Contour[i], x.Contour[j])
-            fx.Contour[i, j] <- f(xin)
-        }
-        par(mfrow = c(1, 1), oma = c(0, 1, 0, 0))
-        par(mfrow = c(1, 1), oma = c(0, 1, 0, 0))
-        contour(x.Contour, x.Contour, exp(fx.Contour), xlab = paste(sep = "", 
-            "x", key.vars[1]), ylab = paste(sep = "", "x", key.vars[2]), 
-            cex.main = 1, xlim = c(-4, 4), ylim = c(-4, 4), levels = c(0.01, 
-                1e-04), labels = rep("", 2))
-        title(c("", "", "", "", "", "", cmd1, cmd2), cex.main = 0.79, 
-            adj = 0)
-        legend(4, -4, c("Sampled points", "Rejected points"), 
-            pch = c(20, 4, 1), pt.cex = c(1.2, 1, 1.2), cex = 0.7, 
-            col = c("black", "red", "blue"), xjust = 1, yjust = 0)
-    }
     cat(sep="", "> sample.out <- hybrid.sample(explore.out, n=", iterations,
       ", replace.target=", replace.target, ")\n")
-    sample.out <- hybrid.sample(explore.out, n = iterations,
-      graph = TRUE, graph.template = template.sample,
-      key.vars = 1:2, nrefresh.graph=50)
+    assign(".Rpackage_DEMO", TRUE, envir=.GlobalEnv)
+    sample.out <- hybrid.sample(explore.out, n = iterations, graph = TRUE)
     assign("sample.out", sample.out, envir = .GlobalEnv)
+    cat("\n")
+    cat("explore.out: ", names(explore.out), "\n")
     cat("sample.out: ", names(sample.out), "\n")
     plot.density(sample.out$SAMP, phase = "sample.out$SAMP")
     return(list(explore.out = explore.out, sample.out = sample.out))

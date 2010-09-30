@@ -37,11 +37,12 @@ SEXP calcSigma(SEXP X, SEXP dsq_eta)
 }
 
 SEXP Leapfrog(SEXP X_mat, SEXP y_vec, SEXP x_vec, SEXP p_vec, SEXP L_int,
-    SEXP delta_num, SEXP Sigma_inv_mat, SEXP dsq_eta_vec, SEXP T_num, SEXP max_sig)
+    SEXP delta_num, SEXP Sigma_inv_mat, SEXP dsq_eta_vec, SEXP T_num, SEXP max_sig,
+    SEXP lb_vec, SEXP ub_vec)
 {
   int n, d;
   int *Xdims;
-  double *X, *y, *x, *p;
+  double *X, *y, *x, *p, *lb, *ub;
   int L;
   double delta, maxsig, T, *Sigma_inv, *dsq_eta;
   Xdims = INTEGER(coerceVector(getAttrib(X_mat, R_DimSymbol), INTSXP));
@@ -50,6 +51,7 @@ SEXP Leapfrog(SEXP X_mat, SEXP y_vec, SEXP x_vec, SEXP p_vec, SEXP L_int,
   double *cx, *cxvec, *ans1, *ans2;
   double prod, h, h1, val, sum;
   int i,j, i1, ii, jj , kk, k;
+  int OUTSIDE;
   
   SEXP X_i, x_p_E;
   SEXP y_star;
@@ -64,6 +66,8 @@ SEXP Leapfrog(SEXP X_mat, SEXP y_vec, SEXP x_vec, SEXP p_vec, SEXP L_int,
   PROTECT(dsq_eta_vec = coerceVector(dsq_eta_vec, REALSXP));
   PROTECT(T_num = coerceVector(T_num, REALSXP));
   PROTECT(max_sig = coerceVector(max_sig, REALSXP));
+  PROTECT(lb_vec = coerceVector(lb_vec, REALSXP));
+  PROTECT(ub_vec = coerceVector(ub_vec, REALSXP));
   PROTECT(c_x = allocVector(REALSXP, n));
   PROTECT(cx_vec = allocVector(REALSXP, n));
   PROTECT(ans_1 = allocVector(REALSXP, n));
@@ -82,6 +86,8 @@ SEXP Leapfrog(SEXP X_mat, SEXP y_vec, SEXP x_vec, SEXP p_vec, SEXP L_int,
   dsq_eta = REAL(dsq_eta_vec);
   T = REAL(T_num)[0];
   maxsig = REAL(max_sig)[0];
+  lb = REAL(lb_vec);
+  ub = REAL(ub_vec);
   cx = REAL(c_x);
   cxvec = REAL(cx_vec);
   ans1 = REAL(ans_1);
@@ -228,8 +234,7 @@ SEXP Leapfrog(SEXP X_mat, SEXP y_vec, SEXP x_vec, SEXP p_vec, SEXP L_int,
       for(i1=0; i1<d; i1++) {
         h = x2[i1] - Xi[i1];
         h = fabs(h);
-        prod *= (1.0 + dsq_eta[1+i1]*h) * exp(-dsq_eta[1+i1]*h);
-      }
+        prod *= (1.0 + dsq_eta[1+i1]*h) * exp(-dsq_eta[1+i1]*h); }
       cx[i] = dsq_eta[0] * prod;
     }
 
@@ -250,6 +255,14 @@ SEXP Leapfrog(SEXP X_mat, SEXP y_vec, SEXP x_vec, SEXP p_vec, SEXP L_int,
       break;
     }
   }
+
+  for(i=0; i<d; i++) do {
+    OUTSIDE = 0;
+    if(x2[i] < lb[i]) x2[i] = 2.0*lb[i] - x2[i];
+    if(x2[i] > ub[i]) x2[i] = 2.0*ub[i] - x2[i];
+    if(x2[i] < lb[i]) OUTSIDE = 1;
+    if(x2[i] > ub[i]) OUTSIDE = 1;
+  }while(OUTSIDE);
   
   for(i=0; i<d; i++) {
     xpE[i +d* 0] = x2[i];
@@ -257,7 +270,7 @@ SEXP Leapfrog(SEXP X_mat, SEXP y_vec, SEXP x_vec, SEXP p_vec, SEXP L_int,
     xpE[i +d* 2] = sigmaf_x;
   }
   
-  UNPROTECT(21);
+  UNPROTECT(23);
   return(x_p_E);
   }
 
