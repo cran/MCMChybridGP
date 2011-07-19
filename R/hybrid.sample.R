@@ -27,7 +27,7 @@ function (Explore, n = 1000, replace.target = c(0, 1, 2),
     if(is.null(lb)) lb <- Explore$details$lb
     if(is.null(ub)) ub <- Explore$details$ub
     BOUNDS <- FALSE
-    if ((!is.null(lb)) || (is.null(ub)))
+    if ((!is.null(lb)) || (!is.null(ub)))
             BOUNDS <- TRUE
     if(is.null(lb)) lb <- rep(-Inf,d)
     if(is.null(ub)) ub <- rep(Inf,d)

@@ -109,6 +109,7 @@ function ()
     cat("    ...\n")
     cat("\n")
     plot.density <- function(X, phase) {
+        select1 <- list(1:131, 1:181)
         oma <- par(mfrow = c(2, 1), oma = c(0, 0, 3, 0))
         for (param in 1:2) {
             p1 <- function(x) return(1/4/pi/sqrt(sigma.sq) * 
@@ -123,10 +124,14 @@ function ()
             px <- 0.5 * p1(x) + 0.5 * p2(x)
             px <- px/sum(px * 0.05)
             densty <- density(X[, param])
-            plot(x, px, type = "l", main = paste(sep = "", 
+            plot(x[select1[[param]]], px[select1[[param]]],
+              type = "l", main = paste(sep = "", 
               "Density x", param), lwd = 0.5, col="blue",
-              ylim = c(0, max(c(densty$y, px))))
-            if(param == 1) abline(v=1.5, lty=2)
+              xlim=c(-5,5), ylim = c(0, max(c(densty$y, px))))
+            abline(v=ub[param], lty=2)
+            select2 <- (1:length(densty$x))[densty$x<ub[param]]
+            densty$y <- densty$y[select2]
+            densty$x <- densty$x[select2]
             lines(densty, lty = 2, col = "red")
         }
         title(phase, outer = TRUE)
