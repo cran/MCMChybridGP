@@ -1,0 +1,16 @@
+8fee09654da1051c4cf6934a35da0c52 *DESCRIPTION
+eb6bf32fec71c5cd17c719a4eab65d36 *NAMESPACE
+d1b475ec7fe02358c66e903b45cce644 *R/GProcess.R
+5fdf1d39720209cd4d4a62f65f2cdad7 *R/MCMChybridGP-internal.R
+39b95ac0979db9f5085de2139da052d9 *R/generateX0.R
+154bb64a798af14e4815309c4e51b7e5 *R/hybrid.explore.R
+1866a0101cf703709ffdaadf4bc4c8c9 *R/hybrid.sample.R
+a535ce49cd4e870333c911432c67329d *demo/00Index
+779edd3eb4d00ff92224e4eda23b2987 *demo/MCMChybridGP.R
+13932ed9b4cef71470138c73c5d44b91 *man/GProcess.Rd
+0034e4e54cf6485199c40de404e091f5 *man/MCMChybridGP-internal.Rd
+f1d743b0abddf6b0e2db4e261d6f2fa4 *man/MCMChybridGP-package.Rd
+6c8e612ab97c7e9007d2d190c21cb44b *man/generateX0.Rd
+692db45c15c7b9ca22541b5dc349b054 *man/hybrid.explore.Rd
+063024db5646f8e0d62afb6f26b72a0a *man/hybrid.sample.Rd
+8fae5d83ee1fc0d8417467750f958522 *src/MCMChybridGP.c

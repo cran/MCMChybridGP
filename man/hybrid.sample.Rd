@@ -29,7 +29,8 @@ Output from \code{\link{hybrid.explore}}.
 A list object consisting of \code{X}, \code{y}, \code{f} and \code{GPfit}.
 \code{X} is the set of points from which a Gaussian process
 fit is gained. Then \code{y} is the corresponding values
-of the target log-density function \code{f}.
+of the target log-density function \code{f}, with further arguments
+\code{...} as supplied to \code{\link{hybrid.explore}}.
 If \code{GPfit} is \code{NULL} then a new Gaussian process fit is determined.
 }
   \item{n}{

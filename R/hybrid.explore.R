@@ -1,8 +1,9 @@
 hybrid.explore <-
-function (f, X0, y0=NULL, n = 200, L = 1000, delta = 0.003, nchains = 5, 
+function (f, X0, ..., y0=NULL, n = 200, L = 1000, delta = 0.003, nchains = 5, 
     T.mult = 1.5, lb = NULL, ub = NULL, maxleap=0.95, finetune = FALSE,
-    Tinclude = nchains, nswaps = choose(nchains, 2), graph = FALSE) 
+    Tinclude = nchains, nswaps = choose(nchains, 2), graph = FALSE)
 {
+    fn <- function(par) f(par, ...)
     X <- as.matrix(X0)
     yfinal <- Xfinal <- NULL
     n0 <- dim(X)[1]
@@ -48,6 +49,12 @@ function (f, X0, y0=NULL, n = 200, L = 1000, delta = 0.003, nchains = 5,
         else digits[j] <- max(1, round(3 - log10(rangeX)))
     }
     rnd <- function(x) return(round(10^digits * x)/10^digits)
+    KEY.VARS <- NULL
+    key.vars <- 1:dim(X)[2]
+    for (i in 1:(length(key.vars) - 1)) for (j in (i + 1):length(key.vars)) {
+        pair <- c(key.vars[i], key.vars[j])
+        KEY.VARS <- rbind(KEY.VARS, pair)
+    }
     if (graph) {
         if(!exists(".Rpackage_DEMO")) {
           Rpackage_DEMO <- .Rpackage_DEMO <- FALSE
@@ -55,17 +62,9 @@ function (f, X0, y0=NULL, n = 200, L = 1000, delta = 0.003, nchains = 5,
           Rpackage_DEMO <- .Rpackage_DEMO
           assign(".Rpackage_DEMO", FALSE, envir=.GlobalEnv)
         }
-        KEY.VARS <- NULL
         nrefresh.graph <- ceiling(10/nchains)
         if(is.logical(Rpackage_DEMO))
           if(Rpackage_DEMO) nrefresh.graph <- Inf
-        key.vars <- 1:dim(X)[2]
-        for (i in 1:(length(key.vars) - 1)) for (j in (i + 1):length(key.vars)) {
-            if (key.vars[i] == key.vars[j]) 
-                stop("Duplicate key.vars not allowed")
-            pair <- c(key.vars[i], key.vars[j])
-            KEY.VARS <- rbind(KEY.VARS, pair)
-        }
         graph.template <- .hybrid.template
         key.indx <- 1
         keyVars <- KEY.VARS[key.indx, ]
@@ -105,7 +104,7 @@ function (f, X0, y0=NULL, n = 200, L = 1000, delta = 0.003, nchains = 5,
             if(OUTSIDE_BOUNDS) stop("X0 violates bounds supplied")
             date1 <- date()
             cat("\n")
-            y[j] <- f(X[j,])
+            y[j] <- fn(X[j,])
             date2 <- date()
             cat(sep = "", "f(x", j, ") = ", y[j], " for x", j, 
                 ":\n")
@@ -304,7 +303,7 @@ function (f, X0, y0=NULL, n = 200, L = 1000, delta = 0.003, nchains = 5,
               cat("Leapfrog: Calculate true f(x) for proposal.\n")
               date1 <- date()
               cat("\n")
-              fx.P <- f(x.P)
+              fx.P <- fn(x.P)
               date2 <- date()
               if (is.na(fx.P)) 
                 stop("f(x) NaN")
@@ -411,6 +410,6 @@ function (f, X0, y0=NULL, n = 200, L = 1000, delta = 0.003, nchains = 5,
       cat("hybrid.explore: GProcess inverse covariance matrix failed\n")
     details <- list(nchains = nchains, T.mult = T.mult, nswaps = nswaps, L = L, delta = delta,
         lb = lb, ub = ub, KEY.VARS = KEY.VARS)
-    return(list(X = X, y = y, f = f, maxleap=maxleap, function.calls = fcalls, details = details, GPfit = GPfit))
+    return(list(X = X, y = y, f = fn, maxleap=maxleap, function.calls = fcalls, details = details, GPfit = GPfit))
 }
 

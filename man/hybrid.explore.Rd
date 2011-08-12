@@ -17,7 +17,7 @@ or the Gaussian process approximation \code{Ef} can be
 used to approximate \code{f}.
 }
 \usage{
-hybrid.explore(f, X0, y0 = NULL, n = 200, L = 1000, delta = 0.003,
+hybrid.explore(f, X0, ..., y0 = NULL, n = 200, L = 1000, delta = 0.003,
                  nchains = 5, T.mult = 1.5, lb = NULL, ub = NULL,
                  maxleap=0.95, finetune = FALSE, Tinclude = nchains,
                  nswaps = choose(nchains, 2), graph = FALSE)
@@ -29,6 +29,9 @@ A function giving the log-density of the target distribution.
   \item{X0}{
 A matrix with rows giving say 10 points for an initial
 Gaussian process fit.
+}
+  \item{...}{
+Further arguments to be passed to \code{f}.
 }
   \item{y0}{
 Corresponding function values if already known.

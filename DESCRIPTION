@@ -1,5 +1,5 @@
 Package: MCMChybridGP
-Version: 4.2
+Version: 4.3
 Title: Hybrid Markov chain Monte Carlo using Gaussian Processes
 Author: Mark J. Fielding <mfieldin@uow.edu.au>
 Maintainer: Mark J. Fielding <mfieldin@uow.edu.au>
@@ -21,6 +21,6 @@ Description: Hybrid Markov chain Monte Carlo (MCMC) to simulate from a
         research programme (R-264-001-272).
 License: GPL-2
 LazyLoad: yes
-Packaged: 2011-07-19 02:24:52 UTC; mark
+Packaged: 2011-08-12 04:47:07 UTC; mark
 Repository: CRAN
-Date/Publication: 2011-07-23 13:02:16
+Date/Publication: 2011-08-12 05:55:15

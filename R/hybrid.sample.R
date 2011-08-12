@@ -81,6 +81,12 @@ function (Explore, n = 1000, replace.target = c(0, 1, 2),
         else digits[j] <- max(1, round(3 - log10(rangeX)))
     }
     rnd <- function(x) return(round(10^digits * x)/10^digits)
+    KEY.VARS <- NULL
+    key.vars <- 1:d
+    for (i in 1:(length(key.vars) - 1)) for (j in (i + 1):length(key.vars)) {
+        pair <- c(key.vars[i], key.vars[j])
+        KEY.VARS <- rbind(KEY.VARS, pair)
+    }
     if (graph) {
         if(!exists(".Rpackage_DEMO")) {
           Rpackage_DEMO <- .Rpackage_DEMO <- FALSE
@@ -88,15 +94,9 @@ function (Explore, n = 1000, replace.target = c(0, 1, 2),
           Rpackage_DEMO <- .Rpackage_DEMO
           assign(".Rpackage_DEMO", FALSE, envir=.GlobalEnv)
         }
-        KEY.VARS <- NULL
         nrefresh.graph <- ceiling(10/nchains)
         if(is.logical(Rpackage_DEMO))
           if(Rpackage_DEMO) nrefresh.graph <- Inf
-        key.vars <- 1:d
-        for (i in 1:(length(key.vars) - 1)) for (j in (i + 1):length(key.vars)) {
-            pair <- c(key.vars[i], key.vars[j])
-            KEY.VARS <- rbind(KEY.VARS, pair)
-        }
         graph.template <- .hybrid.template
         count <- key.indx <- 1
         if (is.null(graph.template)) 
