@@ -12,11 +12,9 @@ function (X, y, params = NULL, request.functions = TRUE, finetune=FALSE)
         finetune <- TRUE
     } else factr <- 1e10
     if(finetune) factr <- 1e15
-    Lreject <- -1e6
-    if (exists(".Rpackage.Lreject")) Lreject <- .Rpackage.Lreject
-    .Rpackage.Lreject <- Lreject
-    assign(".Rpackage.Lreject", Lreject, envir=.GlobalEnv)
+    Lreject <- -1e13
     Lok <- TRUE
+    Sigma <- matrix(rep(0, n*n), ncol=n)
     L <- function(params) {
         lsq <- params[1]
         eta <- params[-1]
@@ -29,14 +27,16 @@ function (X, y, params = NULL, request.functions = TRUE, finetune=FALSE)
             for (j in 1:n) vec[j] <- c.scalar(x, X[j, ])
             return(vec)
         }
-        Sigma <- .Call("calcSigma", X, params)
+        Sigma <- .C("GPcovar", as.double(X), as.integer(n), as.integer(d),
+                    as.double(params), Sigma = as.double(Sigma))$Sigma
+        dim(Sigma) <- c(n, n)
         cholOK <- FALSE
         try({
             R <- chol(Sigma)
             cholOK <- TRUE
         }, silent=TRUE)
         if (!cholOK) {
-            val <- .Rpackage.Lreject * runif(1, 1, 10)
+            val <- Lreject * runif(1, 1, 10)
             Lok <- FALSE
             return(val)
         }
@@ -45,29 +45,25 @@ function (X, y, params = NULL, request.functions = TRUE, finetune=FALSE)
         val <- -1/2 * ldet.Sigma - 1/2 * t(ystar) %*% Sigma.inv %*% 
             ystar
         if (is.na(val)) {
-            val <- .Rpackage.Lreject * runif(1, 1, 10)
+            val <- Lreject * runif(1, 1, 10)
             Lok <- FALSE
-            cat("L(lsq, eta) NaN set to", val, "\n")
+            message(paste("L(lsq, eta) NaN set to", val))
             return(val)
         }
         val <- as.double(val)
-        if (val < .Rpackage.Lreject) 
-            assign(".Rpackage.Lreject", val, envir = .GlobalEnv)
         return(val)
     }
-    cat("GProcess: Maximum likelihood for Gaussian process (finetune =", finetune, "\b)\n")
-    cat("initial L(", params, ") =", L(params), "\n")
     try({
         solveL <- optim(params, L, control = list( fnscale = -1, factr=factr ),
           method = "L-BFGS-B", lower = 1e-06)
         if (Lok) 
             params <- solveL$par
-        cat("optim => L(", round(1e+05 * params)/1e+05, ") =", 
-            as.double(solveL$value), "\n")
     })
     lsq <- params[1]
     eta <- params[-1]
-    Sigma <- .Call("calcSigma", X, params)
+    Sigma <- .C("GPcovar", as.double(X), as.integer(n), as.integer(d),
+                as.double(params), Sigma = as.double(Sigma))$Sigma
+    dim(Sigma) <- c(n, n)
     inverseOK <- FALSE
     try({
         Sigma.inv <- ginv(Sigma)

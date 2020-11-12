@@ -1,5 +1,8 @@
 useDynLib(MCMChybridGP)
 import(MASS)
+importFrom("graphics", "abline", "legend", "lines", "par", "points",
+           "title")
+importFrom("stats", "IQR", "density", "optim", "rnorm", "runif")
 
 export(
        .hybrid.template,

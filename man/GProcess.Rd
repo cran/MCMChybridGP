@@ -54,11 +54,11 @@ of \code{Sigma.inv}.}
 \item{params }{Parameter values for the Gaussian process fit.}
 }
 \references{
-"Efficient MCMC schemes for Bayesian calibration of computer models",
-Fielding, Mark, Nott, David J. and Liong Shie-Yui (2009), in preparation.
+"Efficient MCMC Schemes for Computationally Expensive Posterior Distributions",
+Fielding, Nott and Liong (2011).
 }
 \author{
-Mark James Fielding <stafmj@nus.edu.sg>
+Mark James Fielding <mark.fielding@gmx.com>
 }
 \seealso{
 \code{\link{hybrid.explore}},
@@ -83,6 +83,5 @@ Mark James Fielding <stafmj@nus.edu.sg>
     for(i in 1:9) Ey[i] <- Ef(X[i,])
     data.frame(X, y, Ey)
     ## Gaussian process close to exact at points supplied.
-
 }
 

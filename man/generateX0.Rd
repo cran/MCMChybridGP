@@ -26,14 +26,15 @@ generated points in determining the best set of points.
 }
 }
 \value{
-A matrix is returned which can then be supplied to \code{\link{hybrid.explore}}.
+A matrix is returned which can then be supplied to
+\code{\link{hybrid.explore}}.
 }
 \references{
-"Efficient MCMC schemes for Bayesian calibration of computer models",
-Fielding, Mark, Nott, David J. and Liong Shie-Yui (2009), in preparation.
+"Efficient MCMC Schemes for Computationally Expensive Posterior Distributions",
+Fielding, Nott and Liong (2011).
 }
 \author{
-Mark James Fielding <stafmj@nus.edu.sg>
+Mark James Fielding <mark.fielding@gmx.com>
 }
 \seealso{
 \code{\link{hybrid.explore}},

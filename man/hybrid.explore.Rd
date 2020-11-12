@@ -87,17 +87,17 @@ rates for \code{T=1}, \code{Tinclude=1} might be used.
 Otherwise a larger value gives a faster explore phase.
 }
   \item{nswaps}{
-An optional integer argument.
-The number of repetitions of proposed swaps between the parallel chains.
-}
+  An optional integer argument.
+  The number of repetitions of proposed swaps between the parallel chains.
+  }
   \item{graph}{
-An optional boolean argument (default FALSE).
-To request a graphical display of progress during the explore phase.
-}
+  An optional boolean argument (default FALSE).
+  To request a graphical display of progress during the explore phase.
+  }
 }
 \details{
 The method used in \code{\link{hybrid.explore}} is described in
-Fielding, Mark, Nott, David J. and Liong Shie-Yui (2009).
+Fielding, Nott and Liong (2011).
 }
 \value{
 A list is returned to be used as input to \code{\link{hybrid.sample}}.
@@ -112,33 +112,34 @@ used in the final Gaussian process fit.}
 Gaussian process fit and in particular the (zero mean) approximation \code{Ef}.}
 }
 \references{
-"Efficient MCMC schemes for Bayesian calibration of computer models",
-Fielding, Mark, Nott, David J. and Liong Shie-Yui (2009), in preparation.
+"Efficient MCMC Schemes for Computationally Expensive Posterior Distributions",
+Fielding, Nott and Liong (2011).
 }
 \author{
-Mark J. Fielding <stafmj@nus.edu.sg>
+Mark J. Fielding <mark.fielding@gmx.com>
 }
 \note{
-The methods used in \code{\link{hybrid.explore}} and \code{\link{hybrid.sample}}
+The methods used in \code{\link{hybrid.explore}} and
+\code{\link{hybrid.sample}}
 give extensions to the work of Rasmussen (2003), as described in
-Fielding, Mark, Nott, David J. and Liong Shie-Yui (2009).
+Fielding, Nott and Liong (2011).
 
 For very low acceptance rates, points included at later stages are likely
 to be more useful with a fit only deteriorated by the earlier points.
 In such a case a second run of \code{\link{hybrid.explore}} might be useful,
-taking values for \code{X0} and \code{y0} as those output for \code{X} and \code{y}
-from the first run.
+taking values for \code{X0} and \code{y0} as those output for \code{X} and
+\code{y} from the first run.
 }
 \seealso{
 \code{\link{hybrid.sample}}, \code{\link{GProcess}}, \code{\link{generateX0}}.
 }
 \examples{
-\dontrun{
-
     mu1 <- c(-1, -1)
     mu2 <- c(+1, +1)
     sigma.sq <- 0.16
-    X0 <- matrix(c(-2,-1,0,-2,0,2,0,1,2, -2,-1,-2,0,0,0,2,1,2), ncol = 2)
+    ub <- c(1.5, 3)
+    X0 <- matrix(c(-2,-1, 0,-2, 0, 1, 0, 1, 1,
+                   -2,-1,-2, 0, 0, 0, 2, 1, 2), ncol = 2)
     f <- function(x) {
         px <- 1/4/pi/sqrt(sigma.sq) * exp(-1/2/sigma.sq *
             sum((x - mu1)^2)) + 1/4/pi/sqrt(sigma.sq) *
@@ -146,15 +147,13 @@ from the first run.
         return(log(px))
     }
 
-    explore.out <- hybrid.explore(f, X0, n=100, graph=TRUE)
-
+\donttest{
+    explore.out <- hybrid.explore(f, X0, ub=ub, n=150, graph=TRUE)
     sample.out <- hybrid.sample(explore.out, n=500, graph=TRUE)
 
     opar <- par(mfrow=c(2,1))
     plot(density(sample.out$SAMP[,1]), xlab="x1", ylab="f(x)")
     plot(density(sample.out$SAMP[,2]), xlab="x2", ylab="f(x)")
     par(opar)
-
 }
 }
-

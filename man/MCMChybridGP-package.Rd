@@ -19,12 +19,12 @@ points to get things started.
 The Sampling phase allows replacement of the true
 target in high temperature chains, or complete replacement
 of the target.  A full description of the method is given in
-Fielding, Mark, Nott, David J. and Liong Shie-Yui (2009).
+Fielding, Nott and Liong (2011).
 
 The authors gratefully acknowledge the support &
-contributions of the Singapore-Delft Water Alliance
-(SDWA).  The research presented in this work was carried
-out as part of the SDWA's Multi-Objective Multi-Reservoir
+contributions of the Singapore-Delft Water Alliance.
+The research presented in this work was carried
+out as part of the Multi-Objective Multi-Reservoir
 Management research programme (R-264-001-272).
 }
 \details{
@@ -38,38 +38,38 @@ LazyLoad: \tab yes\cr
 }
 }
 \author{
-Mark James Fielding <stafmj@nus.edu.sg>
+Mark James Fielding <mark.fielding@gmx.com>
 
-Maintainer: Mark James Fielding <stafmj@nus.edu.sg>
+Maintainer: Mark James Fielding <mark.fielding@gmx.com>
 }
 \references{
-"Efficient MCMC schemes for Bayesian calibration of computer models",
-Fielding, Mark, Nott, David J. and Liong Shie-Yui (2009), in preparation.
+"Efficient MCMC Schemes for Computationally Expensive Posterior Distributions",
+Fielding, Nott and Liong (2011).
 }
 \keyword{ package }
 \seealso{
 \code{\link{hybrid.explore}}, \code{\link{hybrid.sample}}
 }
 \examples{
-\dontrun{
-
     mu1 <- c(-1, -1)
     mu2 <- c(+1, +1)
     sigma.sq <- 0.1225
-    X0 <- generateX0(lb=c(-3,-3), ub=c(3,3))
+    ub <- c(1.5, 3)
+    X0 <- generateX0(lb=c(-2,-2), ub=ub)
     f <- function(x) {
         px <- 1/4/pi/sqrt(sigma.sq) * exp(-1/2/sigma.sq *
             sum((x - mu1)^2)) + 1/4/pi/sqrt(sigma.sq) *
             exp(-1/2/sigma.sq * sum((x - mu2)^2))
         return(log(px))
     }
-    explore.out <- hybrid.explore(f, X0, n=100, graph=TRUE)
+
+\donttest{
+    explore.out <- hybrid.explore(f, X0, ub=ub, n=150, graph=TRUE)
     sample.out <- hybrid.sample(explore.out, n=500, graph=TRUE)
+
     opar <- par(mfrow=c(2,1))
     plot(density(sample.out$SAMP[,1]), xlab="x1", ylab="f(x)")
     plot(density(sample.out$SAMP[,2]), xlab="x2", ylab="f(x)")
     par(opar)
-
 }
 }
-

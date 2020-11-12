@@ -91,7 +91,7 @@ Request graphical progress display during the sample phase.
 }
 \details{
 The method used in \code{\link{hybrid.sample}} 
-is described in Fielding, Mark, Nott, David J. and Liong Shie-Yui (2009).
+is described in Fielding, Nott and Liong (2011).
 }
 \value{
 A list is returned consisting of the following.
@@ -104,11 +104,11 @@ of sampling proposal acceptance.}
 \item{function.calls }{The number of function calls to evaluate the true log-density.}
 }
 \references{
-"Efficient MCMC schemes for Bayesian calibration of computer models",
-Fielding, Mark, Nott, David J. and Liong Shie-Yui (2009), in preparation.
+"Efficient MCMC Schemes for Computationally Expensive Posterior Distributions",
+Fielding, Nott and Liong (2011).
 }
 \author{
-Mark J. Fielding <stafmj@nus.edu.sg>
+Mark J. Fielding <mark.fielding@gmx.com>
 }
 \note{
 A record is kept throughout a run of \code{\link{hybrid.sample}}
@@ -117,18 +117,18 @@ Useful for a run stopped prematurely.
 
 The method used in \code{\link{hybrid.sample}} gives extensions
 to the work of Rasmussen (2003) and is described in
-Fielding, Mark, Nott, David J. and Liong Shie-Yui (2009).
+Fielding, Nott and Liong (2011).
 }
 \seealso{
 \code{\link{hybrid.explore}}
 }
 \examples{
-\dontrun{
-
     mu1 <- c(-1, -1)
     mu2 <- c(+1, +1)
     sigma.sq <- 0.16
-    X0 <- matrix(c(-2,-1,0,-2,0,2,0,1,2, -2,-1,-2,0,0,0,2,1,2), ncol = 2)
+    ub <- c(1.5, 3)
+    X0 <- matrix(c(-2,-1, 0,-2, 0, 1, 0, 1, 1,
+                   -2,-1,-2, 0, 0, 0, 2, 1, 2), ncol = 2)
     f <- function(x) {
         px <- 1/4/pi/sqrt(sigma.sq) * exp(-1/2/sigma.sq *
             sum((x - mu1)^2)) + 1/4/pi/sqrt(sigma.sq) *
@@ -136,15 +136,13 @@ Fielding, Mark, Nott, David J. and Liong Shie-Yui (2009).
         return(log(px))
     }
 
-    explore.out <- hybrid.explore(f, X0, n=100, graph=TRUE)
-
+\donttest{
+    explore.out <- hybrid.explore(f, X0, ub=ub, n=150, graph=TRUE)
     sample.out <- hybrid.sample(explore.out, n=500, graph=TRUE)
 
     opar <- par(mfrow=c(2,1))
     plot(density(sample.out$SAMP[,1]), xlab="x1", ylab="f(x)")
     plot(density(sample.out$SAMP[,2]), xlab="x2", ylab="f(x)")
     par(opar)
-
 }
 }
-
