@@ -18,7 +18,7 @@ or all of the chains.  Bounds supplied act as reflecting
 barriers.
 }
 \usage{
-hybrid.sample(Explore, n = 1000, replace.target = c(0, 1, 2),
+hybrid.sample(Explore, n = 1000, replace.target = c(0, 1, 2)[1],
               lb = NULL, ub = NULL, L = NULL, delta = NULL,
               nchains = NULL, T.mult = NULL, maxleap = NULL,
               r = 5, nswaps = NULL, graph = FALSE)

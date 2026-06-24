@@ -1,17 +1,13 @@
-useDynLib(MCMChybridGP)
+useDynLib(MCMChybridGP, .registration = TRUE)
 import(MASS)
-importFrom("graphics", "abline", "legend", "lines", "par", "points",
-           "title")
-importFrom("stats", "IQR", "density", "optim", "rnorm", "runif")
+importFrom(graphics, abline, legend, lines, par, points, title)
+importFrom(stats, IQR, density, optim, rnorm, runif)
+importFrom(Rcpp, evalCpp)
 
 export(
-       .hybrid.template,
-       .runMCMCdemo,
-       .refresh.title,
-       .show.time,
-       GProcess,
-       generateX0,
-       hybrid.explore,
-       hybrid.sample
-       )
+    GProcess,
+    generateX0,
+    hybrid.explore,
+    hybrid.sample
+)
 

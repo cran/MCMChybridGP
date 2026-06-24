@@ -1,25 +1,27 @@
 Package: MCMChybridGP
-Version: 5.4
-Title: Hybrid Markov Chain Monte Carlo using Gaussian Processes
-Author: Mark J. Fielding <mark.fielding@gmx.com>
-Maintainer: Mark J. Fielding <mark.fielding@gmx.com>
-Depends: MASS
-Description: Hybrid Markov chain Monte Carlo (MCMC) to simulate from a
-        multimodal target distribution.  A Gaussian process
-        approximation makes this possible when derivatives are unknown.
-        The Package serves to minimize the number of function
-        evaluations in Bayesian calibration of computer models using
-        parallel tempering.  It allows replacement of the true target
-        distribution in high temperature chains, or complete replacement
-        of the target.  Methods used are described in, "Efficient MCMC
-        schemes for computationally expensive posterior distributions",
-        Fielding et al. (2011) <doi:10.1198/TECH.2010.09195>.
-        The research presented in this work was carried out as part of
-        the Singapore-Delft Water Alliance Multi-Objective
-        Multi-Reservoir Management research programme (R-264-001-272).
+Version: 7.0.1
+Title: Hybrid Markov Chain Monte Carlo Using Gaussian Processes
+Description: Hybrid Markov chain Monte Carlo (MCMC) for sampling from 
+    multimodal target distributions when derivatives are unavailable. 
+    A Gaussian process approximation is used to emulate derivatives, 
+    enabling efficient exploration with parallel tempering. The method 
+    is described in Fielding, Nott and Liong (2011) 
+    <doi:10.1198/TECH.2010.09195>. The research was carried out as part 
+    of the Singapore-Delft Water Alliance Multi-Objective Multi-Reservoir 
+    Management programme (R-264-001-272).
 License: GPL-2
-LazyLoad: yes
-Packaged: 2020-11-09 20:50:35 UTC; mark
-Repository: CRAN
-Date/Publication: 2020-11-12 18:50:02 UTC
+Encoding: UTF-8
+Depends: R (>= 4.2.0)
+Imports: MASS, Rcpp
+LinkingTo: Rcpp
 NeedsCompilation: yes
+Authors@R: person(given = c("Mark", "J."),
+                  family = "Fielding",
+                  role = c("aut", "cre"),
+                  email = "mark.fielding@gmx.com")
+Config/roxygen2/version: 8.0.0
+Packaged: 2026-06-19 23:15:19 UTC; MarkJ
+Author: Mark J. Fielding [aut, cre]
+Maintainer: Mark J. Fielding <mark.fielding@gmx.com>
+Repository: CRAN
+Date/Publication: 2026-06-24 15:10:20 UTC

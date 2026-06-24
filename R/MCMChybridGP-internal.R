@@ -1,21 +1,35 @@
+#' Internal plotting template for hybrid MCMC
+#'
+#' This helper function is used by \code{hybrid.explore()} and 
+#' \code{hybrid.sample()} to initialise the plotting window and 
+#' draw the background scatter for selected variable pairs.
+#' It is not intended to be called directly by users.
+#'
+#' @param X Matrix of design or sample points.
+#' @param key.vars Integer vector of length 2 giving the variable indices.
+#' @param lb Lower bounds (vector).
+#' @param ub Upper bounds (vector).
+#'
+#' @keywords internal
+#' @noRd
 .hybrid.template <-
 function (X, key.vars, lb, ub) 
 {
-    if(is.null(lb)) lb <- rep(-Inf, length(x1))
-    if(is.null(ub)) ub <- rep(Inf, length(x1))
     x1 <- X[, key.vars[1]]
     x2 <- X[, key.vars[2]]
+    if (is.null(lb)) lb <- rep(-Inf, length(x1))
+    if (is.null(ub)) ub <- rep(Inf, length(x1))
     low1 <- min(x1)
     upp1 <- max(x1)
     low2 <- min(x2)
     upp2 <- max(x2)
     extra1 <- extra2 <- 0.25
-    if(sum(abs(lb)) < Inf) {
+    if (all(is.finite(lb))) {
       low1 <- lb[key.vars[1]]
       low2 <- lb[key.vars[2]]
       extra1 <- 0.05
     }
-    if(sum(abs(ub)) < Inf) {
+    if (all(is.finite(ub))) {
       upp1 <- ub[key.vars[1]]
       upp2 <- ub[key.vars[2]]
       extra2 <- 0.05
@@ -39,6 +53,17 @@ function (X, key.vars, lb, ub)
         yjust=0)
 }
 
+#' Internal helper: refresh plot title
+#'
+#' Updates the plot title during the sampling or exploration phases.
+#' Used internally by \code{hybrid.sample()} when \code{graph = TRUE}.
+#' Not intended for direct user use.
+#'
+#' @param x Character string or numeric value used in the title.
+#' @param attempt Optional attempt counter for display.
+#'
+#' @keywords internal
+#' @noRd
 .refresh.title <-
 function (x, attempt=NULL) 
 {
@@ -56,6 +81,14 @@ function (x, attempt=NULL)
     title(deparse(x), cex.main=0.7)
 }
 
+#' Internal helper: legacy MCMC demo
+#'
+#' This function provided the original interactive demonstration for the
+#' package. It is retained for backward compatibility but is not intended
+#' for direct user use. The modern replacement is \code{Demo()}.
+#'
+#' @keywords internal
+#' @noRd
 .runMCMCdemo <-
 function () 
 {
@@ -222,6 +255,17 @@ function ()
     return(list(explore.out=explore.out, sample.out=sample.out))
 }
 
+#' Internal helper: display elapsed time
+#'
+#' Prints timing information during sampling when \code{graph = TRUE}.
+#' Used internally by \code{hybrid.sample()} to show the duration of
+#' expensive function evaluations.
+#'
+#' @param date1 Start time.
+#' @param date2 End time.
+#'
+#' @keywords internal
+#' @noRd
 .show.time <-
 function (date1, date2) 
 {
