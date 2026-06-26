@@ -1,2 +1,2 @@
-out <- .runMCMCdemo()
+out <- Demo()
 

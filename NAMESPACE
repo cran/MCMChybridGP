@@ -8,6 +8,7 @@ export(
     GProcess,
     generateX0,
     hybrid.explore,
-    hybrid.sample
+    hybrid.sample,
+    Demo
 )
 
